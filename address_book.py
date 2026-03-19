@@ -1,7 +1,7 @@
-# UC1 – Create Person Class
+# UC2 – Add New Contact
 
 class Person:
-    def __init__(self, first_name: str, last_name: str, phone: str, email: str, address: str):
+    def __init__(self, first_name, last_name, phone, email, address):
         self.first_name = first_name
         self.last_name = last_name
         self.phone = phone
@@ -9,22 +9,30 @@ class Person:
         self.address = address
 
     def __str__(self):
-        return (
-            f"Name: {self.first_name} {self.last_name}, "
-            f"Phone: {self.phone}, "
-            f"Email: {self.email}, "
-            f"Address: {self.address}"
-        )
+        return f"{self.first_name} {self.last_name} | {self.phone} | {self.email} | {self.address}"
 
 
-# 🔹 Example Usage
+class AddressBook:
+    def __init__(self):
+        self.contacts = []  # list to store Person objects
+
+    def add_contact(self, person):
+        self.contacts.append(person)
+        print("✅ Contact added successfully!")
+
+    def display_contacts(self):
+        for contact in self.contacts:
+            print(contact)
+
+
+# Example Usage
 if __name__ == "__main__":
-    person = Person(
-        "John",
-        "Doe",
-        "9876543210",
-        "john@example.com",
-        "Pune, India"
-    )
+    book = AddressBook()
 
-    print(person)
+    p1 = Person("John", "Doe", "9876543210", "john@example.com", "Pune")
+    p2 = Person("Jane", "Smith", "9123456780", "jane@example.com", "Mumbai")
+
+    book.add_contact(p1)
+    book.add_contact(p2)
+
+    book.display_contacts()
