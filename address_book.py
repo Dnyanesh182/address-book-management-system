@@ -1,4 +1,4 @@
-# UC2 – Add New Contact
+# UC3 – Edit Existing Contact
 
 class Person:
     def __init__(self, first_name, last_name, phone, email, address):
@@ -14,11 +14,23 @@ class Person:
 
 class AddressBook:
     def __init__(self):
-        self.contacts = []  # list to store Person objects
+        self.contacts = []
 
     def add_contact(self, person):
         self.contacts.append(person)
-        print("✅ Contact added successfully!")
+
+    def edit_contact(self, first_name, last_name, phone=None, email=None, address=None):
+        for contact in self.contacts:
+            if contact.first_name == first_name and contact.last_name == last_name:
+                if phone:
+                    contact.phone = phone
+                if email:
+                    contact.email = email
+                if address:
+                    contact.address = address
+                print("✅ Contact updated successfully!")
+                return
+        print("❌ Contact not found")
 
     def display_contacts(self):
         for contact in self.contacts:
@@ -30,9 +42,11 @@ if __name__ == "__main__":
     book = AddressBook()
 
     p1 = Person("John", "Doe", "9876543210", "john@example.com", "Pune")
-    p2 = Person("Jane", "Smith", "9123456780", "jane@example.com", "Mumbai")
-
     book.add_contact(p1)
-    book.add_contact(p2)
+
+    book.display_contacts()
+
+    print("\nUpdating Contact...\n")
+    book.edit_contact("John", "Doe", phone="9999999999", address="Mumbai")
 
     book.display_contacts()
