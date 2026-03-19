@@ -1,4 +1,4 @@
-# UC4 – Delete Contact
+# UC5 – Prevent Duplicate Entries
 
 class Person:
     def __init__(self, first_name, last_name, phone, email, address):
@@ -16,16 +16,22 @@ class AddressBook:
     def __init__(self):
         self.contacts = []
 
-    def add_contact(self, person):
-        self.contacts.append(person)
-
-    def delete_contact(self, first_name, last_name):
+    def is_duplicate(self, person):
         for contact in self.contacts:
-            if contact.first_name == first_name and contact.last_name == last_name:
-                self.contacts.remove(contact)
-                print("✅ Contact deleted successfully!")
-                return
-        print("❌ Contact not found")
+            if (
+                (contact.first_name == person.first_name and contact.last_name == person.last_name) or
+                contact.phone == person.phone or
+                contact.email == person.email
+            ):
+                return True
+        return False
+
+    def add_contact(self, person):
+        if self.is_duplicate(person):
+            print("❌ Duplicate contact detected! Not added.")
+            return
+        self.contacts.append(person)
+        print("✅ Contact added successfully!")
 
     def display_contacts(self):
         for contact in self.contacts:
@@ -37,16 +43,9 @@ if __name__ == "__main__":
     book = AddressBook()
 
     p1 = Person("John", "Doe", "9876543210", "john@example.com", "Pune")
-    p2 = Person("Jane", "Smith", "9123456780", "jane@example.com", "Mumbai")
+    p2 = Person("John", "Doe", "9876543210", "john@example.com", "Mumbai")  # duplicate
 
     book.add_contact(p1)
-    book.add_contact(p2)
+    book.add_contact(p2)  # should be rejected
 
-    print("Before Deletion:")
-    book.display_contacts()
-
-    print("\nDeleting Contact...\n")
-    book.delete_contact("John", "Doe")
-
-    print("\nAfter Deletion:")
     book.display_contacts()
