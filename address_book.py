@@ -1,4 +1,4 @@
-# UC4 – Delete Contact
+# UC6 – Add Multiple Address Books
 
 class Person:
     def __init__(self, first_name, last_name, phone, email, address):
@@ -12,41 +12,54 @@ class Person:
         return f"{self.first_name} {self.last_name} | {self.phone} | {self.email} | {self.address}"
 
 
-class AddressBook:
+class AddressBookManager:
     def __init__(self):
-        self.contacts = []
+        self.address_books = {}  # dictionary of address books
 
-    def add_contact(self, person):
-        self.contacts.append(person)
+    def add_address_book(self, name):
+        if name not in self.address_books:
+            self.address_books[name] = []
+            print(f"✅ Address book '{name}' created")
+        else:
+            print("❌ Address book already exists")
 
-    def delete_contact(self, first_name, last_name):
-        for contact in self.contacts:
-            if contact.first_name == first_name and contact.last_name == last_name:
-                self.contacts.remove(contact)
-                print("✅ Contact deleted successfully!")
+    def add_contact(self, book_name, person):
+        if book_name not in self.address_books:
+            print("❌ Address book not found")
+            return
+
+        # Duplicate check within that book
+        for contact in self.address_books[book_name]:
+            if (
+                (contact.first_name == person.first_name and contact.last_name == person.last_name) or
+                contact.phone == person.phone or
+                contact.email == person.email
+            ):
+                print("❌ Duplicate contact detected!")
                 return
-        print("❌ Contact not found")
 
-    def display_contacts(self):
-        for contact in self.contacts:
-            print(contact)
+        self.address_books[book_name].append(person)
+        print(f"✅ Contact added to '{book_name}'")
+
+    def display_all(self):
+        for book, contacts in self.address_books.items():
+            print(f"\n📘 {book.upper()}:")
+            for contact in contacts:
+                print(contact)
 
 
 # Example Usage
 if __name__ == "__main__":
-    book = AddressBook()
+    manager = AddressBookManager()
+
+    manager.add_address_book("family")
+    manager.add_address_book("friends")
+    manager.add_address_book("office")
 
     p1 = Person("John", "Doe", "9876543210", "john@example.com", "Pune")
     p2 = Person("Jane", "Smith", "9123456780", "jane@example.com", "Mumbai")
 
-    book.add_contact(p1)
-    book.add_contact(p2)
+    manager.add_contact("family", p1)
+    manager.add_contact("friends", p2)
 
-    print("Before Deletion:")
-    book.display_contacts()
-
-    print("\nDeleting Contact...\n")
-    book.delete_contact("John", "Doe")
-
-    print("\nAfter Deletion:")
-    book.display_contacts()
+    manager.display_all()
