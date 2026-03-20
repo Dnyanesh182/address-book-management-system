@@ -1,4 +1,8 @@
-# UC8 – Sort Contacts (Multi-Criteria)
+# UC9 – File I/O + JSON Persistence
+
+import json
+import csv
+
 
 class Person:
     def __init__(self, first_name, last_name, phone, email, address, city, state, zip_code):
@@ -11,12 +15,34 @@ class Person:
         self.state = state
         self.zip_code = zip_code
 
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}"
+    def to_dict(self):
+        return {
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "phone": self.phone,
+            "email": self.email,
+            "address": self.address,
+            "city": self.city,
+            "state": self.state,
+            "zip_code": self.zip_code
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            data["first_name"],
+            data["last_name"],
+            data["phone"],
+            data["email"],
+            data["address"],
+            data["city"],
+            data["state"],
+            data["zip_code"]
+        )
 
     def __str__(self):
         return (
-            f"{self.full_name()} | {self.phone} | {self.email} | "
+            f"{self.first_name} {self.last_name} | {self.phone} | {self.email} | "
             f"{self.address}, {self.city}, {self.state} - {self.zip_code}"
         )
 
@@ -28,35 +54,78 @@ class AddressBookManager:
     def add_address_book(self, name):
         if name not in self.address_books:
             self.address_books[name] = []
-            print(f"✅ Address book '{name}' created")
 
     def add_contact(self, book_name, person):
         if book_name not in self.address_books:
-            print("❌ Address book not found")
-            return
-
+            self.address_books[book_name] = []
         self.address_books[book_name].append(person)
-        print(f"✅ Contact added to '{book_name}'")
 
-    def get_all_contacts(self):
-        contacts = []
-        for book_name, persons in self.address_books.items():
-            for person in persons:
-                contacts.append((book_name, person))
-        return contacts
+    def save_to_json(self, filename):
+        data = {
+            book_name: [person.to_dict() for person in contacts]
+            for book_name, contacts in self.address_books.items()
+        }
+        with open(filename, "w") as file:
+            json.dump(data, file, indent=4)
+        print("✅ Address book saved to JSON")
 
-    def sort_contacts(self, sort_by):
-        contacts = self.get_all_contacts()
+    def load_from_json(self, filename):
+        with open(filename, "r") as file:
+            data = json.load(file)
 
-        if sort_by == "name":
-            return sorted(contacts, key=lambda item: item[1].full_name().lower())
-        if sort_by == "city":
-            return sorted(contacts, key=lambda item: item[1].city.lower())
-        if sort_by == "zip":
-            return sorted(contacts, key=lambda item: item[1].zip_code)
+        self.address_books = {
+            book_name: [Person.from_dict(person_data) for person_data in contacts]
+            for book_name, contacts in data.items()
+        }
+        print("✅ Address book loaded from JSON")
 
-        print("❌ Invalid sort criteria")
-        return []
+    def save_to_csv(self, filename):
+        with open(filename, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(
+                ["book_name", "first_name", "last_name", "phone", "email", "address", "city", "state", "zip_code"]
+            )
+            for book_name, contacts in self.address_books.items():
+                for person in contacts:
+                    writer.writerow([
+                        book_name,
+                        person.first_name,
+                        person.last_name,
+                        person.phone,
+                        person.email,
+                        person.address,
+                        person.city,
+                        person.state,
+                        person.zip_code
+                    ])
+        print("✅ Address book saved to CSV")
+
+    def load_from_csv(self, filename):
+        self.address_books = {}
+        with open(filename, "r") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                book_name = row["book_name"]
+                person = Person(
+                    row["first_name"],
+                    row["last_name"],
+                    row["phone"],
+                    row["email"],
+                    row["address"],
+                    row["city"],
+                    row["state"],
+                    row["zip_code"]
+                )
+                if book_name not in self.address_books:
+                    self.address_books[book_name] = []
+                self.address_books[book_name].append(person)
+        print("✅ Address book loaded from CSV")
+
+    def display_all_contacts(self):
+        for book_name, contacts in self.address_books.items():
+            print(f"\n[{book_name}]")
+            for person in contacts:
+                print(person)
 
 
 # Example Usage
@@ -66,16 +135,11 @@ if __name__ == "__main__":
     manager.add_address_book("family")
     manager.add_address_book("friends")
 
-    p1 = Person("John", "Doe", "9876543210", "john@example.com", "MG Road", "Pune", "Maharashtra", "411001")
-    p2 = Person("Jane", "Smith", "9123456780", "jane@example.com", "Link Road", "Mumbai", "Maharashtra", "400001")
-    p3 = Person("Amit", "Patil", "9988776655", "amit@example.com", "FC Road", "Pune", "Maharashtra", "411004")
+    manager.add_contact("family", Person("John", "Doe", "9876543210", "john@example.com", "MG Road", "Pune", "Maharashtra", "411001"))
+    manager.add_contact("friends", Person("Jane", "Smith", "9123456780", "jane@example.com", "Link Road", "Mumbai", "Maharashtra", "400001"))
 
-    manager.add_contact("family", p1)
-    manager.add_contact("friends", p2)
-    manager.add_contact("friends", p3)
+    manager.save_to_json("address_book.json")
+    manager.save_to_csv("address_book.csv")
 
-    sorted_contacts = manager.sort_contacts("name")
-
-    print("\nSorted Contacts:")
-    for book_name, person in sorted_contacts:
-        print(f"[{book_name}] {person}")
+    manager.load_from_json("address_book.json")
+    manager.display_all_contacts()
